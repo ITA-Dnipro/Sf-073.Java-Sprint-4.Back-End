@@ -1,1 +1,1 @@
-# Sf-073.Java-Sprint-4.Back-End
+# RESTfull web service for Anti-Fraud System with basic authentication and authorization
