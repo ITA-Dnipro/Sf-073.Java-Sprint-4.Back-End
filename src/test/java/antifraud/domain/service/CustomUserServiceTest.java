@@ -2,6 +2,7 @@ package antifraud.domain.service;
 
 import antifraud.domain.model.CustomUser;
 import antifraud.domain.model.CustomUserFactory;
+import antifraud.domain.model.enums.UserAccess;
 import antifraud.domain.model.enums.UserRole;
 import antifraud.domain.service.impl.CustomUserServiceImpl;
 import antifraud.persistence.repository.CustomUserRepository;
@@ -9,21 +10,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CustomUserServiceTest {
+
+    private CustomUserService customUserService;
     @InjectMocks
     private CustomUserServiceImpl customUserServiceImpl;
     @Mock
@@ -35,15 +47,27 @@ class CustomUserServiceTest {
     @BeforeEach
     void setup() {
         this.user = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
+        customUserService = customUserServiceImpl;
     }
 
     @Test
     void WhenRegisterNewUserThenReturnRegisteredUser() {
         given(this.customUserRepository.save(user)).willReturn(user);
 
-        Optional<CustomUser> customUser = customUserServiceImpl.registerUser(user);
+        Optional<CustomUser> customUser = customUserService.registerUser(user);
 
         assertEquals(Optional.of(user), customUser);
+    }
+
+    @Test
+    void WhenRegisterNewUserThenInvokeAllInnerMethods() {
+        given(this.customUserRepository.save(user)).willReturn(user);
+
+        customUserService.registerUser(user);
+
+        //todo
+        verify(encoder).encode(user.getPassword());
+        verifyNoMoreInteractions(encoder);
     }
 
     @Test
@@ -51,9 +75,19 @@ class CustomUserServiceTest {
         given(this.customUserRepository.save(user)).willReturn(user);
         UserRole expectedRole = UserRole.ADMINISTRATOR;
 
-        CustomUser customUser = customUserServiceImpl.registerUser(user).get();
+        CustomUser customUser = customUserService.registerUser(user).get();
 
         assertEquals(expectedRole, customUser.getRole());
+    }
+
+    @Test
+    void WhenRegisterFirstUserThenAccessIsUnlocked() {
+        given(this.customUserRepository.save(user)).willReturn(user);
+        UserAccess expectedAccess = UserAccess.UNLOCK;
+
+        CustomUser customUser = customUserService.registerUser(user).get();
+
+        assertEquals(expectedAccess, customUser.getAccess());
     }
 
     @Test
@@ -67,12 +101,32 @@ class CustomUserServiceTest {
         UserRole expectedRoleFirstUser = UserRole.ADMINISTRATOR;
         UserRole expectedRoleSecondUser = UserRole.MERCHANT;
 
-        CustomUser customUser = customUserServiceImpl.registerUser(user).get();
-        CustomUser secondCustomUser = customUserServiceImpl.registerUser(secondUser).get();
+        CustomUser customUser = customUserService.registerUser(user).get();
+        CustomUser secondCustomUser = customUserService.registerUser(secondUser).get();
 
         assertAll(
                 () -> assertEquals(expectedRoleFirstUser, customUser.getRole()),
                 () -> assertEquals(expectedRoleSecondUser, secondCustomUser.getRole())
+        );
+    }
+
+    @Test
+    void WhenRegisterSecondUserThenAccessIsLocked() {
+        CustomUser secondUser = CustomUserFactory.create("JaneDoe", "jane333doe", "secretz");
+        given(this.customUserRepository.save(user)).willReturn(user);
+        given(this.customUserRepository.save(secondUser)).willReturn(secondUser);
+        given(this.customUserRepository.count())
+                .willReturn(0L)
+                .willReturn(1L);
+        UserAccess expectedAccessFirstUser = UserAccess.UNLOCK;
+        UserAccess expectedAccessSecondUser = UserAccess.LOCK;
+
+        CustomUser customUser = customUserService.registerUser(user).get();
+        CustomUser secondCustomUser = customUserService.registerUser(secondUser).get();
+
+        assertAll(
+                () -> assertEquals(expectedAccessFirstUser, customUser.getAccess()),
+                () -> assertEquals(expectedAccessSecondUser, secondCustomUser.getAccess())
         );
     }
 
@@ -84,8 +138,8 @@ class CustomUserServiceTest {
         given(this.customUserRepository.save(user)).willReturn(user);
         Optional<CustomUser> expectedFirstSave = Optional.of(user);
 
-        Optional<CustomUser> firstTimeRegister = customUserServiceImpl.registerUser(user);
-        Optional<CustomUser> secondTimeRegister = customUserServiceImpl.registerUser(user);
+        Optional<CustomUser> firstTimeRegister = customUserService.registerUser(user);
+        Optional<CustomUser> secondTimeRegister = customUserService.registerUser(user);
 
         assertAll(
                 () -> assertEquals(expectedFirstSave, firstTimeRegister),
@@ -97,9 +151,56 @@ class CustomUserServiceTest {
         given(this.customUserRepository.existsByUsername(user.getUsername()))
                 .willReturn(true);
 
-        Optional<CustomUser> customUser = customUserServiceImpl.registerUser(user);
+        Optional<CustomUser> customUser = customUserService.registerUser(user);
 
         assertThat(customUser).isEmpty();
+    }
+
+    @Test
+    void WhenRegisterExistentUserThenNotInvokeSave() {
+        given(this.customUserRepository.existsByUsername(user.getUsername()))
+                .willReturn(true);
+
+        customUserService.registerUser(user);
+//todo
+        verify(customUserRepository);
+    }
+
+    @Test
+    void WhenRepoIsEmptyThenGetUsersReturnEmptyCollection() {
+        List<CustomUser> users = customUserService.getUsers();
+
+        assertThat(users).isEmpty();
+    }
+
+    @Test
+    void WhenRepoIsNotEmptyThenGetUsersReturnCollection() {
+        List<CustomUser> customUsers = Arrays.asList(user,
+                CustomUserFactory.create("JaneDoe", "jane333doe", "secretz"));
+        given(this.customUserRepository.findAll())
+                .willReturn(customUsers);
+        int expectedSize = 2;
+
+        List<CustomUser> users = customUserService.getUsers();
+
+        assertEquals(expectedSize, users.size());
+    }
+
+    @Test
+    void WhenDeletingNonExistentUserThenThrowException() {
+        Executable executable = () -> customUserService.deleteUser(any());
+
+        assertThrows(UsernameNotFoundException.class, executable);
+    }
+
+    @Test
+    void WhenDeletingExistentUserThenDoesNotThrowException() {
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
+                .willReturn(Optional.of(user));
+
+        Executable executable = () -> customUserService.deleteUser(any());
+
+        assertDoesNotThrow(executable);
     }
 
 }
