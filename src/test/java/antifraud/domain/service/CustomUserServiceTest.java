@@ -5,6 +5,8 @@ import antifraud.domain.model.CustomUserFactory;
 import antifraud.domain.model.enums.UserAccess;
 import antifraud.domain.model.enums.UserRole;
 import antifraud.domain.service.impl.CustomUserServiceImpl;
+import antifraud.exceptions.AlreadyProvidedException;
+import antifraud.exceptions.ExistingAdministratorException;
 import antifraud.persistence.repository.CustomUserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -62,12 +66,17 @@ class CustomUserServiceTest {
     @Test
     void WhenRegisterNewUserThenInvokeAllInnerMethods() {
         given(this.customUserRepository.save(user)).willReturn(user);
+        String password = user.getPassword();
+        String username = user.getUsername();
 
         customUserService.registerUser(user);
 
-        //todo
-        verify(encoder).encode(user.getPassword());
+        verify(encoder, times(1)).encode(password);
         verifyNoMoreInteractions(encoder);
+        verify(customUserRepository, times(1)).count();
+        verify(customUserRepository, times(1)).existsByUsername(username);
+        verify(customUserRepository, times(1)).save(user);
+        verifyNoMoreInteractions(customUserRepository);
     }
 
     @Test
@@ -148,7 +157,8 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterExistingUserThenReturnEmpty() {
-        given(this.customUserRepository.existsByUsername(user.getUsername()))
+        String username = user.getUsername();
+        given(this.customUserRepository.existsByUsername(username))
                 .willReturn(true);
 
         Optional<CustomUser> customUser = customUserService.registerUser(user);
@@ -158,12 +168,13 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterExistentUserThenNotInvokeSave() {
-        given(this.customUserRepository.existsByUsername(user.getUsername()))
+        String username = user.getUsername();
+        given(this.customUserRepository.existsByUsername(username))
                 .willReturn(true);
 
         customUserService.registerUser(user);
-//todo
-        verify(customUserRepository);
+
+        verify(customUserRepository, never()).save(any());
     }
 
     @Test
@@ -194,13 +205,88 @@ class CustomUserServiceTest {
     }
 
     @Test
+    void WhenDeleteNonExistentUserThrowExceptionThenDoNotInvokeDelete() {
+        String username = user.getUsername();
+
+        Executable executable = () -> customUserService.deleteUser(username);
+
+        verify(customUserRepository, never()).deleteById(any());
+        verifyNoMoreInteractions(customUserRepository);
+    }
+
+    @Test
     void WhenDeletingExistentUserThenDoesNotThrowException() {
-        given(customUserRepository.findByUsernameIgnoreCase(any()))
+        String username = user.getUsername();
+        given(customUserRepository.findByUsernameIgnoreCase(username))
                 .willReturn(Optional.of(user));
 
-        Executable executable = () -> customUserService.deleteUser(any());
+        Executable executable = () -> customUserService.deleteUser(username);
 
         assertDoesNotThrow(executable);
+    }
+
+    @Test
+    void WhenChangingRoleToNonExistentUserThenThrowException() {
+        Executable executable = () -> customUserService.changeUserRole(user);
+
+        assertThrows(UsernameNotFoundException.class, executable);
+    }
+
+    @Test
+    void WhenChangeRoleWithSameRoleThenThrowException() {
+        String username = user.getUsername();
+        user.setRole(UserRole.MERCHANT);
+        given(customUserRepository.findByUsernameIgnoreCase(username))
+                .willReturn(Optional.of(user));
+
+        Executable executable = () -> customUserService.changeUserRole(user);
+
+        assertThrows(AlreadyProvidedException.class, executable);
+    }
+
+    @Test
+    void WhenChangeAdministratorRoleThenThrowException() {
+        CustomUser secondUser = CustomUserFactory.create("JaneDoe", "jane333doe", "secretz");
+        secondUser.setRole(UserRole.MERCHANT);
+        user.setRole(UserRole.ADMINISTRATOR);
+        String username = user.getUsername();
+        given(customUserRepository.findByUsernameIgnoreCase(username))
+                .willReturn(Optional.of(secondUser));
+
+        Executable executable = () -> customUserService.changeUserRole(user);
+
+        assertThrows(ExistingAdministratorException.class, executable);
+    }
+
+    @Test
+    void WhenChangingNonConflictRoleThenTheRoleWillBeChanged() {
+        CustomUser userInDB = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
+        userInDB.setRole(UserRole.MERCHANT);
+        user.setRole(UserRole.SUPPORT);
+        String username = user.getUsername();
+        given(customUserRepository.findByUsernameIgnoreCase(username))
+                .willReturn(Optional.of(userInDB));
+        UserRole expectedRole = UserRole.SUPPORT;
+
+        customUserService.changeUserRole(user);
+        UserRole resultRole = userInDB.getRole();
+
+        assertEquals(expectedRole, resultRole);
+    }
+
+    @Test
+    void WhenChangeUserRoleThenInvokeSave() {
+        CustomUser userInDB = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
+        userInDB.setRole(UserRole.MERCHANT);
+        user.setRole(UserRole.SUPPORT);
+        String username = user.getUsername();
+        given(customUserRepository.findByUsernameIgnoreCase(username))
+                .willReturn(Optional.of(userInDB));
+
+        customUserService.changeUserRole(user);
+
+        verify(customUserRepository, times(1)).save(userInDB);
+        verifyNoMoreInteractions(customUserRepository);
     }
 
 }
