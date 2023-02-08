@@ -74,7 +74,6 @@ class CustomUserServiceTest {
 
         customUserService.registerUser(user);
 
-//        verify(encoder, times(1)).encode(password);
         then(encoder).should(times(1)).encode(password);
         verifyNoMoreInteractions(encoder);
         then(customUserRepository).should(times(1)).count();
