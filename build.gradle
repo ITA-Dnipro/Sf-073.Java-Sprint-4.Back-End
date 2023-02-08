@@ -33,6 +33,7 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+    testCompileOnly 'org.assertj:assertj-core:3.11.1'
 }
 
 tasks.named('test') {
