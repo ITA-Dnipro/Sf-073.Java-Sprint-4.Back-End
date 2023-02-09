@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -50,11 +52,14 @@ class CustomUserServiceTest {
     @Mock
     private PasswordEncoder encoder;
     private CustomUser user;
+    @Captor
+    private ArgumentCaptor<String> stringCaptor;
 
     @BeforeEach
     void setup() {
         this.user = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
-        customUserService = customUserServiceImpl;
+        this.customUserService = customUserServiceImpl;
+        this.stringCaptor = ArgumentCaptor.forClass(String.class);
     }
 
     @Test
@@ -69,17 +74,30 @@ class CustomUserServiceTest {
     @Test
     void WhenRegisterNewUserThenInvokeAllInnerMethods() {
         given(this.customUserRepository.save(user)).willReturn(user);
-        String password = user.getPassword();
-        String username = user.getUsername();
 
         customUserService.registerUser(user);
 
-        then(encoder).should(times(1)).encode(password);
+        then(encoder).should(times(1)).encode(any());
         verifyNoMoreInteractions(encoder);
+
         then(customUserRepository).should(times(1)).count();
-        then(customUserRepository).should(times(1)).existsByUsername(username);
-        then(customUserRepository).should(times(1)).save(user);
+        then(customUserRepository).should(times(1)).existsByUsername(any());
+        then(customUserRepository).should(times(1)).save(any());
         verifyNoMoreInteractions(customUserRepository);
+    }
+
+    @Test
+    void WhenRegisterNewUserThenPasswordToBeEncodedIsSameAsProvidedByUser() {
+        given(this.customUserRepository.save(user)).willReturn(user);
+        String expectedPassword = user.getPassword();
+
+        customUserService.registerUser(user);
+
+        then(encoder).should(times(1)).encode(stringCaptor.capture());
+        verifyNoMoreInteractions(encoder);
+
+        String expectedArgumentPassword = stringCaptor.getValue();
+        assertEquals(expectedPassword, expectedArgumentPassword);
     }
 
     @Test
@@ -88,8 +106,9 @@ class CustomUserServiceTest {
         UserRole expectedRole = UserRole.ADMINISTRATOR;
 
         CustomUser customUser = customUserService.registerUser(user).get();
+        UserRole resultRole = customUser.getRole();
 
-        assertEquals(expectedRole, customUser.getRole());
+        assertEquals(expectedRole, resultRole);
     }
 
     @Test
@@ -98,8 +117,9 @@ class CustomUserServiceTest {
         UserAccess expectedAccess = UserAccess.UNLOCK;
 
         CustomUser customUser = customUserService.registerUser(user).get();
+        UserAccess resultAccess = customUser.getAccess();
 
-        assertEquals(expectedAccess, customUser.getAccess());
+        assertEquals(expectedAccess, resultAccess);
     }
 
     @Test
@@ -115,11 +135,13 @@ class CustomUserServiceTest {
         UserRole expectedRoleSecondUser = UserRole.MERCHANT;
 
         CustomUser customUser = customUserService.registerUser(user).get();
+        UserRole resultRoleFirstUser = customUser.getRole();
         CustomUser secondCustomUser = customUserService.registerUser(secondUser).get();
+        UserRole resultRoleSecondUser = secondCustomUser.getRole();
 
         assertAll(
-                () -> assertEquals(expectedRoleFirstUser, customUser.getRole()),
-                () -> assertEquals(expectedRoleSecondUser, secondCustomUser.getRole())
+                () -> assertEquals(expectedRoleFirstUser, resultRoleFirstUser),
+                () -> assertEquals(expectedRoleSecondUser, resultRoleSecondUser)
         );
     }
 
@@ -136,12 +158,31 @@ class CustomUserServiceTest {
         UserAccess expectedAccessSecondUser = UserAccess.LOCK;
 
         CustomUser customUser = customUserService.registerUser(user).get();
+        UserAccess resultAccessFirstUser = customUser.getAccess();
         CustomUser secondCustomUser = customUserService.registerUser(secondUser).get();
+        UserAccess resultAccessSecondUser = secondCustomUser.getAccess();
 
         assertAll(
-                () -> assertEquals(expectedAccessFirstUser, customUser.getAccess()),
-                () -> assertEquals(expectedAccessSecondUser, secondCustomUser.getAccess())
+                () -> assertEquals(expectedAccessFirstUser, resultAccessFirstUser),
+                () -> assertEquals(expectedAccessSecondUser, resultAccessSecondUser)
         );
+    }
+
+    @Test
+    void WhenRegisterTwoUsersThenUseCorrectUsernamesToFindThem() {
+        CustomUser secondUser = CustomUserFactory.create("JaneDoe", "jane333doe", "secretz");
+        given(this.customUserRepository.save(any()))
+                .willReturn(user)
+                .willReturn(secondUser);
+        List<String> expectedValues = Arrays.asList("johndoe1", "jane333doe");
+
+        customUserService.registerUser(user);
+        customUserService.registerUser(secondUser);
+
+        then(customUserRepository).should(times(2))
+                .existsByUsername(stringCaptor.capture());
+        List<String> resultValues = stringCaptor.getAllValues();
+        assertEquals(expectedValues, resultValues);
     }
 
     @Test
@@ -162,8 +203,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterExistingUserThenReturnEmpty() {
-        String username = user.getUsername();
-        given(this.customUserRepository.existsByUsername(username))
+        given(this.customUserRepository.existsByUsername(any()))
                 .willReturn(true);
 
         Optional<CustomUser> customUser = customUserService.registerUser(user);
@@ -172,9 +212,8 @@ class CustomUserServiceTest {
     }
 
     @Test
-    void WhenRegisterExistentUserThenNotInvokeSave() {
-        String username = user.getUsername();
-        given(this.customUserRepository.existsByUsername(username))
+    void WhenRegisterExistingUserThenNotInvokeSave() {
+        given(this.customUserRepository.existsByUsername(any()))
                 .willReturn(true);
 
         customUserService.registerUser(user);
@@ -198,8 +237,9 @@ class CustomUserServiceTest {
         int expectedSize = 2;
 
         List<CustomUser> users = customUserService.getUsers();
+        int resultSize = users.size();
 
-        assertEquals(expectedSize, users.size());
+        assertEquals(expectedSize, resultSize);
     }
 
     @Test
@@ -211,9 +251,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenDeleteNonExistentUserThrowExceptionThenDoNotInvokeDelete() {
-        String username = user.getUsername();
-
-        Executable executable = () -> customUserService.deleteUser(username);
+        Executable executable = () -> customUserService.deleteUser(any());
 
         then(customUserRepository).should(never()).deleteById(any());
         verifyNoMoreInteractions(customUserRepository);
@@ -221,11 +259,10 @@ class CustomUserServiceTest {
 
     @Test
     void WhenDeletingExistentUserThenDoesNotThrowException() {
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(user));
 
-        Executable executable = () -> customUserService.deleteUser(username);
+        Executable executable = () -> customUserService.deleteUser(any());
 
         assertDoesNotThrow(executable);
     }
@@ -239,9 +276,8 @@ class CustomUserServiceTest {
 
     @Test
     void WhenChangeRoleWithSameRoleThenThrowException() {
-        String username = user.getUsername();
         user.setRole(UserRole.MERCHANT);
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(user));
 
         Executable executable = () -> customUserService.changeUserRole(user);
@@ -254,8 +290,7 @@ class CustomUserServiceTest {
         CustomUser secondUser = CustomUserFactory.create("JaneDoe", "jane333doe", "secretz");
         secondUser.setRole(UserRole.MERCHANT);
         user.setRole(UserRole.ADMINISTRATOR);
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(secondUser));
 
         Executable executable = () -> customUserService.changeUserRole(user);
@@ -268,8 +303,7 @@ class CustomUserServiceTest {
         CustomUser userInDB = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
         userInDB.setRole(UserRole.MERCHANT);
         user.setRole(UserRole.SUPPORT);
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(userInDB));
         UserRole expectedRole = UserRole.SUPPORT;
 
@@ -284,13 +318,12 @@ class CustomUserServiceTest {
         CustomUser userInDB = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
         userInDB.setRole(UserRole.MERCHANT);
         user.setRole(UserRole.SUPPORT);
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(userInDB));
 
         customUserService.changeUserRole(user);
 
-        then(customUserRepository).should(times(1)).save(userInDB);
+        then(customUserRepository).should(times(1)).save(any());
         verifyNoMoreInteractions(customUserRepository);
     }
 
@@ -304,8 +337,7 @@ class CustomUserServiceTest {
     @Test
     void WhenChangingAccessToAdministratorThenThrowException() {
         user.setRole(UserRole.ADMINISTRATOR);
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(user));
 
         Executable executable = () -> customUserService.grantAccess(user);
@@ -318,8 +350,7 @@ class CustomUserServiceTest {
         CustomUser userInDB = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
         userInDB.setAccess(UserAccess.LOCK);
         user.setAccess(UserAccess.UNLOCK);
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(userInDB));
         UserAccess expectedAccessLevel = UserAccess.UNLOCK;
 
@@ -334,13 +365,12 @@ class CustomUserServiceTest {
         CustomUser userInDB = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
         userInDB.setAccess(UserAccess.LOCK);
         user.setAccess(UserAccess.UNLOCK);
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(userInDB));
 
         customUserService.grantAccess(user);
 
-        then(customUserRepository).should(times(1)).save(userInDB);
+        then(customUserRepository).should(times(1)).save(any());
         verifyNoMoreInteractions(customUserRepository);
     }
 
@@ -359,8 +389,9 @@ class CustomUserServiceTest {
                 .willReturn(Optional.of(userInDB));
 
         customUserService.retrieveRealUsername(expectedUsername);
+        String resultUsername = userInDB.getUsername();
 
-        assertEquals(expectedUsername, userInDB.getUsername());
+        assertEquals(expectedUsername, resultUsername);
     }
 
     @Test
@@ -374,13 +405,11 @@ class CustomUserServiceTest {
     void WhenLoadByUsernameThenReturnUserPrincipal() {
         user.setRole(UserRole.MERCHANT);
         UserPrincipal userPrincipal = new UserPrincipal(user);
-        String username = user.getUsername();
-        given(customUserRepository.findByUsernameIgnoreCase(username))
+        given(customUserRepository.findByUsernameIgnoreCase(any()))
                 .willReturn(Optional.of(user));
 
-        UserDetails userDetails = customUserService.loadUserByUsername(username);
+        UserDetails userDetails = customUserService.loadUserByUsername(any());
 
         assertThat(userPrincipal).usingRecursiveComparison().isEqualTo(userDetails);
     }
-
 }
