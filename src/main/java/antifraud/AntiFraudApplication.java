@@ -8,6 +8,5 @@ public class AntiFraudApplication {
     public static void main(String[] args) {
 
         SpringApplication.run(AntiFraudApplication.class, args);
-
     }
 }
