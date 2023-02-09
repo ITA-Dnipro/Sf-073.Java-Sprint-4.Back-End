@@ -64,7 +64,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterNewUserThenReturnRegisteredUser() {
-        given(this.customUserRepository.save(user)).willReturn(user);
+        given(customUserRepository.save(user)).willReturn(user);
 
         Optional<CustomUser> customUser = customUserService.registerUser(user);
 
@@ -73,7 +73,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterNewUserThenInvokeAllInnerMethods() {
-        given(this.customUserRepository.save(user)).willReturn(user);
+        given(customUserRepository.save(user)).willReturn(user);
 
         customUserService.registerUser(user);
 
@@ -88,7 +88,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterNewUserThenPasswordToBeEncodedIsSameAsProvidedByUser() {
-        given(this.customUserRepository.save(user)).willReturn(user);
+        given(customUserRepository.save(user)).willReturn(user);
         String expectedPassword = user.getPassword();
 
         customUserService.registerUser(user);
@@ -102,7 +102,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterFirstUserThenRoleIsAdministrator() {
-        given(this.customUserRepository.save(user)).willReturn(user);
+        given(customUserRepository.save(user)).willReturn(user);
         UserRole expectedRole = UserRole.ADMINISTRATOR;
 
         CustomUser customUser = customUserService.registerUser(user).get();
@@ -113,7 +113,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterFirstUserThenAccessIsUnlocked() {
-        given(this.customUserRepository.save(user)).willReturn(user);
+        given(customUserRepository.save(user)).willReturn(user);
         UserAccess expectedAccess = UserAccess.UNLOCK;
 
         CustomUser customUser = customUserService.registerUser(user).get();
@@ -125,10 +125,10 @@ class CustomUserServiceTest {
     @Test
     void WhenRegisterSecondUserThenRoleIsMerchant() {
         CustomUser secondUser = CustomUserFactory.create("JaneDoe", "jane333doe", "secretz");
-        given(this.customUserRepository.save(any()))
+        given(customUserRepository.save(any()))
                 .willReturn(user)
                 .willReturn(secondUser);
-        given(this.customUserRepository.count())
+        given(customUserRepository.count())
                 .willReturn(0L)
                 .willReturn(1L);
         UserRole expectedRoleFirstUser = UserRole.ADMINISTRATOR;
@@ -148,10 +148,10 @@ class CustomUserServiceTest {
     @Test
     void WhenRegisterSecondUserThenAccessIsLocked() {
         CustomUser secondUser = CustomUserFactory.create("JaneDoe", "jane333doe", "secretz");
-        given(this.customUserRepository.save(any()))
+        given(customUserRepository.save(any()))
                 .willReturn(user)
                 .willReturn(secondUser);
-        given(this.customUserRepository.count())
+        given(customUserRepository.count())
                 .willReturn(0L)
                 .willReturn(1L);
         UserAccess expectedAccessFirstUser = UserAccess.UNLOCK;
@@ -171,7 +171,7 @@ class CustomUserServiceTest {
     @Test
     void WhenRegisterTwoUsersThenUseCorrectUsernamesToFindThem() {
         CustomUser secondUser = CustomUserFactory.create("JaneDoe", "jane333doe", "secretz");
-        given(this.customUserRepository.save(any()))
+        given(customUserRepository.save(any()))
                 .willReturn(user)
                 .willReturn(secondUser);
         List<String> expectedValues = Arrays.asList("johndoe1", "jane333doe");
@@ -187,10 +187,10 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterNewUserTwiceThenFirstTimeReturnUserAndSecondTimeReturnEmpty() {
-        given(this.customUserRepository.existsByUsername(user.getUsername()))
+        given(customUserRepository.existsByUsername(user.getUsername()))
                 .willReturn(false)
                 .willReturn(true);
-        given(this.customUserRepository.save(user)).willReturn(user);
+        given(customUserRepository.save(user)).willReturn(user);
         Optional<CustomUser> expectedFirstSave = Optional.of(user);
 
         Optional<CustomUser> firstTimeRegister = customUserService.registerUser(user);
@@ -203,7 +203,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterExistingUserThenReturnEmpty() {
-        given(this.customUserRepository.existsByUsername(any()))
+        given(customUserRepository.existsByUsername(any()))
                 .willReturn(true);
 
         Optional<CustomUser> customUser = customUserService.registerUser(user);
@@ -213,7 +213,7 @@ class CustomUserServiceTest {
 
     @Test
     void WhenRegisterExistingUserThenNotInvokeSave() {
-        given(this.customUserRepository.existsByUsername(any()))
+        given(customUserRepository.existsByUsername(any()))
                 .willReturn(true);
 
         customUserService.registerUser(user);
