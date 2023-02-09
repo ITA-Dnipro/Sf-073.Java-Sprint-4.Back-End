@@ -20,61 +20,61 @@ import static org.mockito.BDDMockito.given;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-class RegularCardServiceImplTest {
+class RegularCardServiceTest {
 
     @InjectMocks
     private RegularCardServiceImpl regularCardServiceImpl;
     @Mock
     private RegularCardRepository regularCardRepository;
 
+    private final String validCardNumber = "6250941006528599";
+
     @Test
-    void WhenRegularCardRepoIsEmptyThenFindByNumberShouldReturnNull() {
+    void whenRegularCardRepoIsEmptyThenFindByNumberShouldReturnNull() {
         RegularCard regularCard = regularCardServiceImpl.findByNumber("");
         assertThat(regularCard).isNull();
     }
 
     @Test
-    void WhenRegularCardRepoMatchesThenFindByNumberShouldRegularCardAndShouldMatch() {
-        RegularCard customRegularCard = RegularCardFactory.create("6250941006528599");
-        given(this.regularCardRepository.findByNumber("6250941006528599")).willReturn(customRegularCard);
+    void whenRegularCardRepoMatchesThenFindByNumberShouldRegularCardAndShouldMatch() {
+        RegularCard customRegularCard = RegularCardFactory.create(validCardNumber);
+        given(regularCardRepository.findByNumber(validCardNumber)).willReturn(customRegularCard);
 
-        RegularCard regularCard = this.regularCardRepository.findByNumber("6250941006528599");
+        RegularCard regularCard = regularCardRepository.findByNumber(validCardNumber);
 
         assertEquals(customRegularCard.getNumber(), regularCard.getNumber());
     }
 
     @Test
-    void WhenRegularCardDoesNotMatchesThenFindByNumberShouldRegularCardAndShouldNotMatch() {
-        RegularCard customRegularCard1 = RegularCardFactory.create("6250941006528599");
-        RegularCard customRegularCard2 = RegularCardFactory.create("6250941006528588");
+    void whenRegularCardDoesNotMatchesThenFindByNumberShouldRegularCardAndShouldNotMatch() {
+        RegularCard customRegularCard = RegularCardFactory.create(validCardNumber);
+        String invalidCardNumber = "6250941006528588";
+        RegularCard invalidCard = RegularCardFactory.create(invalidCardNumber);
 
-        given(this.regularCardRepository.findByNumber("6250941006528588")).willReturn(customRegularCard2);
+        given(regularCardRepository.findByNumber(invalidCardNumber)).willReturn(invalidCard);
+        RegularCard regularCard = regularCardRepository.findByNumber(invalidCardNumber);
 
-        RegularCard regularCard = this.regularCardRepository.findByNumber("6250941006528588");
-
-        assertNotEquals(customRegularCard1.getNumber(), regularCard.getNumber());
+        assertNotEquals(customRegularCard.getNumber(), regularCard.getNumber());
     }
 
     @Test
-    void WhenRegularCardRepoIsEmptyThenExistsByNumberShouldReturnFalse() {
+    void whenRegularCardRepoIsEmptyThenExistsByNumberShouldReturnFalse() {
         boolean isPresent = regularCardServiceImpl.existsByNumber("");
         assertFalse(isPresent);
     }
 
     @Test
-    void WhenRegularCardExistsThenExistsByNumberShouldReturnTrue() {
-        given(this.regularCardRepository.existsByNumber("6250941006528599")).willReturn(true);
-        boolean isPresent = this.regularCardRepository.existsByNumber("6250941006528599");
+    void whenRegularCardExistsThenExistsByNumberShouldReturnTrue() {
+        given(regularCardRepository.existsByNumber(validCardNumber)).willReturn(true);
+        boolean isPresent = regularCardRepository.existsByNumber(validCardNumber);
         assertTrue(isPresent);
     }
 
     @Test
-    void WhenSavingRegularCardThenReturnTheRegularCard() {
-        RegularCard regularCard = RegularCardFactory.create("6250941006528599");
-        given(this.regularCardRepository.save(regularCard)).willReturn(regularCard);
+    void whenSavingRegularCardThenReturnTheRegularCard() {
+        RegularCard regularCard = RegularCardFactory.create(validCardNumber);
+        given(regularCardRepository.save(regularCard)).willReturn(regularCard);
         RegularCard customRegularCard = regularCardServiceImpl.save(regularCard);
         assertEquals(regularCard, customRegularCard);
     }
-
-
 }
