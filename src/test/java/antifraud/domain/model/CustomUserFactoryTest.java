@@ -38,8 +38,10 @@ class CustomUserFactoryTest {
         CustomUser userWithRole = CustomUserFactory.createWithRole("johndoe1", UserRole.SUPPORT);
 
         assertAll(
-                () -> assertThat(userWithRole).hasFieldOrPropertyWithValue("username", "johndoe1"),
-                () -> assertThat(userWithRole).hasFieldOrPropertyWithValue("role", UserRole.SUPPORT)
+                () -> assertThat(userWithRole)
+                        .hasFieldOrPropertyWithValue("username", "johndoe1"),
+                () -> assertThat(userWithRole)
+                        .hasFieldOrPropertyWithValue("role", UserRole.SUPPORT)
         );
     }
 
@@ -48,15 +50,18 @@ class CustomUserFactoryTest {
         CustomUser userWithAccess = CustomUserFactory.createWithAccess("johndoe1", UserAccess.UNLOCK);
 
         assertAll(
-                () -> assertThat(userWithAccess).hasFieldOrPropertyWithValue("username", "johndoe1"),
-                () -> assertThat(userWithAccess).hasFieldOrPropertyWithValue("access", UserAccess.UNLOCK)
+                () -> assertThat(userWithAccess)
+                        .hasFieldOrPropertyWithValue("username", "johndoe1"),
+                () -> assertThat(userWithAccess)
+                        .hasFieldOrPropertyWithValue("access", UserAccess.UNLOCK)
         );
     }
 
     @Test
     void WhenMockingFactoryMethodThenReturnRightObject() {
-        try(MockedStatic<CustomUserFactory> mockedFactory = mockStatic(CustomUserFactory.class)) {
-            mockedFactory.when(() -> CustomUserFactory.createWithAccess(any(), any()))
+        try (MockedStatic<CustomUserFactory> mockedFactory = mockStatic(CustomUserFactory.class)) {
+            mockedFactory
+                    .when(() -> CustomUserFactory.createWithAccess(any(), any()))
                     .thenReturn(CustomUser.builder()
                             .username("JoHnDoE1")
                             .access(UserAccess.UNLOCK)
@@ -65,8 +70,10 @@ class CustomUserFactoryTest {
             CustomUser userWithAccess = CustomUserFactory.createWithAccess(any(), any());
 
             assertAll(
-                    () -> assertThat(userWithAccess).hasFieldOrPropertyWithValue("username", "JoHnDoE1"),
-                    () -> assertThat(userWithAccess).hasFieldOrPropertyWithValue("access", UserAccess.UNLOCK)
+                    () -> assertThat(userWithAccess)
+                            .hasFieldOrPropertyWithValue("username", "JoHnDoE1"),
+                    () -> assertThat(userWithAccess)
+                            .hasFieldOrPropertyWithValue("access", UserAccess.UNLOCK)
             );
         }
     }
