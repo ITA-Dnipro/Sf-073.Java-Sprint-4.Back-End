@@ -39,7 +39,6 @@ public class SuspiciousIPServiceImpl implements SuspiciousIPService {
 
     @Override
     public boolean existsByIpAddress(String ipAddress) {
-
         return suspiciousIPRepository.existsByIpAddress(ipAddress);
     }
 }
