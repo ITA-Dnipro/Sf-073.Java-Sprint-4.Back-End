@@ -5,7 +5,8 @@ import antifraud.domain.model.StolenCard;
 import antifraud.domain.model.StolenCardFactory;
 import antifraud.persistence.repository.StolenCardRepository;
 
-import org.assertj.core.api.Assertions;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest
-class StolenCardTest {
+class StolenCardRepositoryTest {
 
     @Autowired
     private DataSource dataSource;
@@ -32,8 +33,15 @@ class StolenCardTest {
     @Autowired
     StolenCardRepository stolenCardRepository;
 
-    private final String cardNumber = "4000008449433403";
-    private final String nonExistingCardNumber = "341846397906706";
+    private final String CARD_NUMBER = "4000008449433403";
+    private final String NON_EXISTING_CARD_NUMBER = "341846397906706";
+
+
+    @BeforeEach
+    void setUp() {
+        StolenCard stolenCard = StolenCardFactory.create(CARD_NUMBER);
+        entityManager.persist(stolenCard);
+    }
 
     @Test
     void injectedComponentsAreNotNull() {
@@ -45,41 +53,29 @@ class StolenCardTest {
 
     @Test
     void given_existing_stolen_card_number_when_existByNumber_then_true() {
-        StolenCard stolenCard = StolenCardFactory.create(cardNumber);
+        boolean expected = stolenCardRepository.existsByNumber(CARD_NUMBER);
 
-        entityManager.persist(stolenCard);
-        boolean expected = stolenCardRepository.existsByNumber(cardNumber);
-
-        Assertions.assertThat(expected).isTrue();
+        assertThat(expected).isTrue();
     }
 
     @Test
     void given_NOT_existing_stolen_card_number_when_existByNumber_then_false() {
-        StolenCard stolenCard = StolenCardFactory.create(cardNumber);
-
-        entityManager.persist(stolenCard);
-        boolean expected = stolenCardRepository.existsByNumber(nonExistingCardNumber);
+        boolean expected = stolenCardRepository.existsByNumber(NON_EXISTING_CARD_NUMBER);
 
         assertThat(expected).isFalse();
     }
 
     @Test
     void given_credit_stolen_card_number_when_findByNumber_then_return_stolen_creditCardNumber() {
-        StolenCard stolenCard = StolenCardFactory.create(cardNumber);
-        entityManager.persist(stolenCard);
-
-        Optional<StolenCard> expected = stolenCardRepository.findByNumber(cardNumber);
+        Optional<StolenCard> expected = stolenCardRepository.findByNumber(CARD_NUMBER);
 
         assertThat(expected).isPresent();
-        assertThat(expected.get().getNumber()).isEqualTo(cardNumber);
+        assertThat(expected.get().getNumber()).isEqualTo(CARD_NUMBER);
     }
 
     @Test
     void given_wrong_credit_stolen_card_number_when_findByNumber_then_isEmpty() {
-        StolenCard stolenCard = StolenCardFactory.create(cardNumber);
-        entityManager.persist(stolenCard);
-
-        Optional<StolenCard> expected = stolenCardRepository.findByNumber(nonExistingCardNumber);
+        Optional<StolenCard> expected = stolenCardRepository.findByNumber(NON_EXISTING_CARD_NUMBER);
 
         assertThat(expected).isNotPresent();
     }
