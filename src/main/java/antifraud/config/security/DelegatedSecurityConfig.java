@@ -47,7 +47,7 @@ public class DelegatedSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/auth/**").hasRole(UserRole.ADMINISTRATOR.name())
                         .requestMatchers(HttpMethod.POST, "/api/antifraud/transaction").hasRole(UserRole.MERCHANT.name())
                         .requestMatchers("/api/antifraud/**").hasRole(UserRole.SUPPORT.name())
-                        .requestMatchers("/actuator/shutdown").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().denyAll())
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));

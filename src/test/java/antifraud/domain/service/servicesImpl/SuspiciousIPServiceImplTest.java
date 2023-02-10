@@ -1,6 +1,7 @@
-package antifraud.domain.service.impl;
+package antifraud.domain.service.servicesImpl;
 
 import antifraud.domain.model.IP;
+import antifraud.domain.service.impl.SuspiciousIPServiceImpl;
 import antifraud.exceptions.IpNotFoundException;
 import antifraud.persistence.repository.SuspiciousIPRepository;
 import org.junit.jupiter.api.BeforeEach;
