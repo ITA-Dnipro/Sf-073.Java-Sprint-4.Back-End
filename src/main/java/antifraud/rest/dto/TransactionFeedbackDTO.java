@@ -6,13 +6,16 @@ import antifraud.domain.model.enums.TransactionResult;
 import antifraud.domain.model.enums.WorldRegion;
 import antifraud.validation.AvailableFeedback;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Builder;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
+@JsonPropertyOrder({"amountMoney", "ipAddress", "cardNumber", "region", "date"})
 @Builder
 public record TransactionFeedbackDTO(@Min(1)
                                      @NotNull
