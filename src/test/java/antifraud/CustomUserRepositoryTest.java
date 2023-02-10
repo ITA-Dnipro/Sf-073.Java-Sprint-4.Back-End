@@ -8,25 +8,18 @@ import antifraud.persistence.repository.CustomUserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 
-import javax.sql.DataSource;
+
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class CustomUserRepositoryTest {
-    @Autowired
-    private DataSource dataSource;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private TestEntityManager entityManager;
-    @Autowired
+
+    @SpyBean
     CustomUserRepository customUserRepository;
 
     private final String NAME = "Johny Bravo";
@@ -37,14 +30,11 @@ class CustomUserRepositoryTest {
     @BeforeEach
     void setUp() {
         CustomUser user = CustomUserFactory.create(NAME, USER_NAME, PASSWORD);
-        entityManager.persist(user);
+        customUserRepository.save(user);
     }
 
     @Test
-    void injectedComponentsAreNotNull() {
-        assertThat(dataSource).isNotNull();
-        assertThat(jdbcTemplate).isNotNull();
-        assertThat(entityManager).isNotNull();
+    void injected_components_are_not_null() {
         assertThat(customUserRepository).isNotNull();
     }
 

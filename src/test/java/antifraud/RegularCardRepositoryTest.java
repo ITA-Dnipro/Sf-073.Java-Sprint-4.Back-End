@@ -7,25 +7,17 @@ import antifraud.persistence.repository.RegularCardRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class RegularCardRepositoryTest {
 
-    @Autowired
-    private DataSource dataSource;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private TestEntityManager entityManager;
-    @Autowired
+    @SpyBean
     RegularCardRepository regularCardRepository;
 
     private final String CARD_NUMBER = "4000008449433403";
@@ -34,14 +26,11 @@ class RegularCardRepositoryTest {
     @BeforeEach
     void setUp() {
         RegularCard regularCard = RegularCardFactory.create(CARD_NUMBER);
-        entityManager.persist(regularCard);
+        regularCardRepository.save(regularCard);
     }
 
     @Test
-    void injectedComponentsAreNotNull() {
-        assertThat(dataSource).isNotNull();
-        assertThat(jdbcTemplate).isNotNull();
-        assertThat(entityManager).isNotNull();
+    void injected_components_are_not_null() {
         assertThat(regularCardRepository).isNotNull();
     }
 
