@@ -6,6 +6,7 @@ import antifraud.rest.controller.IPController;
 import antifraud.rest.dto.CustomMessageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.collection.ArrayAsIterableMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -121,6 +123,19 @@ class IPControllerTest {
                             .get(URL)
                             .with(SecurityMockMvcRequestPostProcessors.csrf()))
                     .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @WithMockUser(username = "georgi", authorities = {"ROLE_SUPPORT"})
+        void should_ReturnEmptyList_When_IPRepositoryIsEmpty() throws Exception {
+            when(suspiciousIPService.showIpAddresses()).thenReturn(Collections.emptyList());
+
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get(URL)
+                            .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$").value(new ArrayList<>()));
+
         }
     }
 
