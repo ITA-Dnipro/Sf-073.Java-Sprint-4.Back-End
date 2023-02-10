@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @ToString
 //@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor()
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @Builder(access = AccessLevel.PACKAGE)
 @Entity
 @Table(name = "transactions", indexes = {

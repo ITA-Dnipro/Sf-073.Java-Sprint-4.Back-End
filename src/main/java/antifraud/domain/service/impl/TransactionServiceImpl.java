@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -44,25 +45,19 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.save(transaction);
         TransactionResult resultByAmountMoney = transactionResultByAmountMoney(transaction);
         String infoFromInitialResult = infoFromInitialTransactionResult(resultByAmountMoney);
-        List<Transaction> transactionsInLastHourOfTransactionHistory =
-                transactionRepository.findByCardNumberAndDateTimeBetween(transaction.getCardNumber(),
-                        transaction.getDateTime().minusHours(1),
-                        transaction.getDateTime());
-        long ipUniqueCount =
-                correlationCount(transactionsInLastHourOfTransactionHistory,
-                        Transaction::getIpAddress);
-        long regionUniqueCount =
-                correlationCount(transactionsInLastHourOfTransactionHistory,
-                        r -> r.getWorldRegion().name());
-        List<String> infoFromCorrelation =
-                infoFromTransactionCorrelationCount(ipUniqueCount, regionUniqueCount);
+        List<Transaction> transactionsInLastHourOfTransactionHistory = transactionRepository
+                .findByCardNumberAndDateTimeBetween(transaction.getCardNumber(),
+                                                    transaction.getDateTime().minusHours(1),
+                                                    transaction.getDateTime());
+        long ipUniqueCount = correlationCount(transactionsInLastHourOfTransactionHistory, Transaction::getIpAddress);
+        long regionUniqueCount = correlationCount(transactionsInLastHourOfTransactionHistory,
+                                                  r -> r.getWorldRegion().name());
+        List<String> infoFromCorrelation = infoFromTransactionCorrelationCount(ipUniqueCount, regionUniqueCount);
         List<String> infoFromBlacklists = infoFromCardAndIpBlacklists(transaction);
 
-        TransactionResult resultBasedOnInfo =
-                resultBasedOnInfoNumbers(ipUniqueCount,
-                        regionUniqueCount,
-                        infoFromBlacklists.size(),
-                        resultByAmountMoney);
+        TransactionResult resultBasedOnInfo = resultBasedOnInfoNumbers(ipUniqueCount, regionUniqueCount,
+                                                                       infoFromBlacklists.size(),
+                                                                       resultByAmountMoney);
         if (!resultBasedOnInfo.equals(resultByAmountMoney)) {
             infoFromInitialResult = "";
         }
@@ -99,13 +94,12 @@ public class TransactionServiceImpl implements TransactionService {
     private long correlationCount(List<Transaction> transactions,
                                   Function<Transaction, String> transactionField) {
         return transactions.stream()
-                .map(transactionField)
-                .distinct()
-                .count();
+                           .map(transactionField)
+                           .distinct()
+                           .count();
     }
 
-    private List<String> infoFromTransactionCorrelationCount(Long ipUniqueCount, Long regionUniqueCount) {
-        List<String> infoFromCorrelation = new ArrayList<>();
+    private List<String> infoFromTransactionCorrelationCount(Long ipUniqueCount, Long regionUniqueCount) {List<String> infoFromCorrelation = new ArrayList<>();
         if (ipUniqueCount >= transactionProperty.correlation()) {
             infoFromCorrelation.add("ip-correlation");
         }
@@ -175,16 +169,16 @@ public class TransactionServiceImpl implements TransactionService {
         infoFromBlacklists.add(infoFromResult);
         infoFromBlacklists.addAll(infoFromCorrelation);
         return infoFromBlacklists.stream()
-                .filter(s -> s.length() != 0)
-                .sorted()
-                .map(String::valueOf)
-                .collect(Collectors.joining(", "));
+                                 .filter(s -> s.length() != 0)
+                                 .sorted()
+                                 .map(String::valueOf)
+                                 .collect(Collectors.joining(", "));
     }
 
     @Override
     public Transaction giveFeedback(Transaction feedback) {
         Transaction transactionFromDB = transactionRepository.findById(feedback.getId())
-                .orElseThrow(TransactionsNotFoundException::new);
+                                                             .orElseThrow(TransactionsNotFoundException::new);
         if (transactionRepository.existsByFeedbackAndFeedbackNotNull(transactionFromDB.getFeedback())) {
             throw new ExistingFeedbackException(HttpStatus.CONFLICT);
         }
@@ -239,28 +233,30 @@ public class TransactionServiceImpl implements TransactionService {
 
     private void increaseAllowedLimit(RegularCard regularCard, Long money) {
         long newLimit = (long) Math.ceil(transactionProperty.currentLimitFactor() * regularCard.getAllowedLimit() +
-                transactionProperty.currentDepositFactor() * money);
+                                                 transactionProperty.currentDepositFactor() * money);
         regularCard.setAllowedLimit(newLimit);
         regularCardService.save(regularCard);
     }
 
     private void increaseManualLimit(RegularCard regularCard, Long money) {
-        long newLimit = (long) Math.ceil(transactionProperty.currentLimitFactor() * regularCard.getManualProcessingLimit() +
-                transactionProperty.currentDepositFactor() * money);
+        long newLimit = (long) Math.ceil(
+                transactionProperty.currentLimitFactor() * regularCard.getManualProcessingLimit() +
+                        transactionProperty.currentDepositFactor() * money);
         regularCard.setManualProcessingLimit(newLimit);
         regularCardService.save(regularCard);
     }
 
     private void decreaseAllowedLimit(RegularCard regularCard, Long money) {
         long newLimit = (long) Math.ceil(transactionProperty.currentLimitFactor() * regularCard.getAllowedLimit() -
-                transactionProperty.currentDepositFactor() * money);
+                                                 transactionProperty.currentDepositFactor() * money);
         regularCard.setAllowedLimit(newLimit);
         regularCardService.save(regularCard);
     }
 
     private void decreaseManualLimit(RegularCard regularCard, Long money) {
-        long newLimit = (long) Math.ceil(transactionProperty.currentLimitFactor() * regularCard.getManualProcessingLimit() -
-                transactionProperty.currentDepositFactor() * money);
+        long newLimit = (long) Math.ceil(
+                transactionProperty.currentLimitFactor() * regularCard.getManualProcessingLimit() -
+                        transactionProperty.currentDepositFactor() * money);
         regularCard.setManualProcessingLimit(newLimit);
         regularCardService.save(regularCard);
     }

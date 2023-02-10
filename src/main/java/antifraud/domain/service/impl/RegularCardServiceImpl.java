@@ -18,6 +18,7 @@ public class RegularCardServiceImpl implements RegularCardService {
 
     @Override
     public RegularCard findByNumber(String cardNumber) {
+        System.out.println();
         return regularCardRepository.findByNumber(cardNumber);
     }
 
