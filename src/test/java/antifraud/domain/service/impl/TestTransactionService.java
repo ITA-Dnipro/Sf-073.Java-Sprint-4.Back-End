@@ -1,6 +1,5 @@
 package antifraud.domain.service.impl;
 
-
 import antifraud.config.transaction.TransactionProperty;
 import antifraud.domain.model.RegularCard;
 import antifraud.domain.model.Transaction;
@@ -13,11 +12,9 @@ import antifraud.persistence.repository.RegularCardRepository;
 import antifraud.persistence.repository.TransactionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -26,12 +23,9 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-//@TestPropertySource("transaction.values")
-//@ExtendWith(MockitoExtension.class)
 @ExtendWith(SpringExtension.class)
 @EnableConfigurationProperties(value = TransactionProperty.class)
 @TestPropertySource("classpath:application.properties")
@@ -72,7 +66,8 @@ public class TestTransactionService {
 
         when(transactionServiceImpl.processTransaction(transaction)).thenReturn(transaction);
 
-        when(transactionRepository.findTransactionByCardNumber(transaction.getCardNumber())).thenReturn(List.of(transaction));
+        when(transactionRepository.findTransactionByCardNumber(transaction.getCardNumber())).thenReturn(
+                List.of(transaction));
         List<Transaction> transactions = transactionRepository.findTransactionByCardNumber(
                 "4000008449433403");
 
@@ -98,7 +93,8 @@ public class TestTransactionService {
 
         when(transactionServiceImpl.processTransaction(transaction)).thenReturn(transaction);
 
-        when(transactionRepository.findTransactionByCardNumber(transaction.getCardNumber())).thenReturn(List.of(transaction));
+        when(transactionRepository.findTransactionByCardNumber(transaction.getCardNumber())).thenReturn(
+                List.of(transaction));
         List<Transaction> transactions = transactionRepository.findTransactionByCardNumber(
                 "4000008449433403");
 
@@ -124,7 +120,8 @@ public class TestTransactionService {
 
         when(transactionServiceImpl.processTransaction(transaction)).thenReturn(transaction);
 
-        when(transactionRepository.findTransactionByCardNumber(transaction.getCardNumber())).thenReturn(List.of(transaction));
+        when(transactionRepository.findTransactionByCardNumber(transaction.getCardNumber())).thenReturn(
+                List.of(transaction));
         List<Transaction> transactions = transactionRepository.findTransactionByCardNumber(
                 "4000008449433403");
 
