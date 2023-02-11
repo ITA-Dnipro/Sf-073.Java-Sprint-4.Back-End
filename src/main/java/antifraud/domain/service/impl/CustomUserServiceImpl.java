@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -120,6 +121,13 @@ public class CustomUserServiceImpl implements CustomUserService {
         CustomUser foundUser = foundByUsername(username);
         return foundUser.getUsername();
     }
+
+    @Override
+    public Map<String, String> login(String username) {
+        CustomUser foundUser = foundByUsername(username);
+        return Map.of("username",foundUser.getUsername(),"role",foundUser.getRole().toString());
+    }
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

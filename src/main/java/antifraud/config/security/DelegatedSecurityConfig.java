@@ -51,6 +51,7 @@ public class DelegatedSecurityConfig {
                         .anyRequest().denyAll())
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.cors();
         return http.build();
     }
 
