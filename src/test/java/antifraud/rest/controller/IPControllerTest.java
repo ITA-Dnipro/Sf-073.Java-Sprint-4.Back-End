@@ -52,22 +52,13 @@ class IPControllerTest {
     }
 
     @Test
-    void WhenSavingNonExistentIpAddressThenReturnStatus200() throws Exception {
-        given(suspiciousIPService.saveSuspiciousAddress(any(IP.class))).willReturn(Optional.of(ip));
-
-        mockMvc.perform(post(URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(VALID_CONTENT))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     void WhenSavingNonExistentIpAddressThenReturnSavedIp() throws Exception {
         given(suspiciousIPService.saveSuspiciousAddress(any(IP.class))).willReturn(Optional.of(ip));
 
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_CONTENT))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ip.getId()))
                 .andExpect(jsonPath("$.ip").value(ip.getIpAddress()));
     }
