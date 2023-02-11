@@ -30,17 +30,18 @@ class CustomUserRepositoryTest {
     private final TestEntityManager entityManager;
     private final CustomUserRepository customUserRepository;
     private CustomUser customUser;
+    private String username;
 
     @BeforeEach
     void setup() {
         this.customUser = CustomUserFactory
                 .create("JohnDoe", "johndoe1", "secret");
+        username = customUser.getUsername();
     }
 
     @Test
     void WhenUsernameExistsThenReturnTrue() {
         entityManager.persist(customUser);
-        String username = customUser.getUsername();
 
         boolean result = customUserRepository.existsByUsername(username);
 
@@ -49,7 +50,7 @@ class CustomUserRepositoryTest {
 
     @Test
     void WhenUsernameDoesNotExistsThenReturnFalse() {
-        boolean result = customUserRepository.existsByUsername(customUser.getUsername());
+        boolean result = customUserRepository.existsByUsername(username);
 
         assertFalse(result);
     }
@@ -57,7 +58,7 @@ class CustomUserRepositoryTest {
     @Test
     void WhenFindByNonExistentUsernameThenReturnEmpty() {
         Optional<CustomUser> nonExistentUser = customUserRepository
-                .findByUsernameIgnoreCase(customUser.getUsername());
+                .findByUsernameIgnoreCase(username);
 
         assertThat(nonExistentUser).isEmpty();
     }
@@ -65,7 +66,6 @@ class CustomUserRepositoryTest {
     @Test
     void WhenFindByUsernameThenReturnFoundUser() {
         entityManager.persist(customUser);
-        String username = customUser.getUsername();
 
         Optional<CustomUser> foundUser = customUserRepository.findByUsernameIgnoreCase(username);
 
@@ -161,5 +161,4 @@ class CustomUserRepositoryTest {
 
         assertEquals(expectedCount, resultCount);
     }
-
 }
