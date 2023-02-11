@@ -7,6 +7,8 @@ import antifraud.rest.dto.DeletedUserDTO;
 import antifraud.rest.dto.UserAccessDTO;
 import antifraud.rest.dto.UserDTO;
 import antifraud.rest.dto.UserRoleDTO;
+import antifraud.rest.dto.UserStatusDTO;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -78,6 +79,16 @@ public class UserController {
 
     @PostMapping("/login")
     Map<String, String> login(@RequestBody String username) {
-        return userService.login(username.replace("\"",""));
+
+        return userService.login(username.replace("\"", ""));
+    }
+
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @GetMapping("/list-access")
+    List<UserStatusDTO> listUsersAccess() {
+        List<CustomUser> usersPermissions = userService.getUsersPermissions();
+        return usersPermissions.stream()
+                .map(UserStatusDTO::fromModel)
+                .toList();
     }
 }

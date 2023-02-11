@@ -1,6 +1,7 @@
 package antifraud.domain.service.impl;
 
 import antifraud.domain.model.CustomUser;
+import antifraud.domain.model.CustomUserFactory;
 import antifraud.domain.model.UserPrincipal;
 import antifraud.domain.model.enums.UserAccess;
 import antifraud.domain.model.enums.UserRole;
@@ -9,6 +10,7 @@ import antifraud.exceptions.AccessViolationException;
 import antifraud.exceptions.AlreadyProvidedException;
 import antifraud.exceptions.ExistingAdministratorException;
 import antifraud.persistence.repository.CustomUserRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -127,6 +128,15 @@ public class CustomUserServiceImpl implements CustomUserService {
         CustomUser foundUser = foundByUsername(username);
         return Map.of("username", foundUser.getUsername(),
                 "role", foundUser.getRole().name());
+    }
+
+    @Override
+    public List<CustomUser> getUsersPermissions() {
+        List<CustomUser> users = customUserRepository.findAll();
+        return users.stream()
+                .map(user -> CustomUserFactory
+                        .createWithAccess(user.getUsername(), user.getAccess()))
+                .toList();
     }
 
     @Override

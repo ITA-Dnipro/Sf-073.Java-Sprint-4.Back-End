@@ -22,4 +22,6 @@ public interface CustomUserService extends UserDetailsService {
     String retrieveRealUsername(String username);
 
     Map<String, String> login(String username);
+
+    List<CustomUser> getUsersPermissions();
 }
