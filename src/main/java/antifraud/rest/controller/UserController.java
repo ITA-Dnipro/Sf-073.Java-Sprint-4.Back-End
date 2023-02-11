@@ -10,6 +10,7 @@ import antifraud.rest.dto.UserRoleDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,10 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/auth")
+@CrossOrigin
 public class UserController {
     private final CustomUserService userService;
 
@@ -71,5 +74,10 @@ public class UserController {
     UserAccessDTO grantAccess(@Valid @RequestBody UserAccessDTO userAccessDTO) {
         CustomUser userPermission = userService.grantAccess(userAccessDTO.toModel());
         return UserAccessDTO.fromModel(userPermission);
+    }
+
+    @PostMapping("/login")
+    Map<String, String> login(@RequestBody String username) {
+        return userService.login(username.replace("\"",""));
     }
 }

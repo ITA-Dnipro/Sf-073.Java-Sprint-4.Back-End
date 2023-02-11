@@ -41,6 +41,7 @@ public class DelegatedSecurityConfig {
                 .headers(h -> h.frameOptions().disable())
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.POST, "/api/auth/user").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/auth/user/**").hasRole(UserRole.ADMINISTRATOR.name())
                         .requestMatchers(HttpMethod.GET, "/api/auth/list")
                         .hasAnyRole(UserRole.ADMINISTRATOR.name(), UserRole.SUPPORT.name())
@@ -51,6 +52,7 @@ public class DelegatedSecurityConfig {
                         .anyRequest().denyAll())
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.cors();
         return http.build();
     }
 
