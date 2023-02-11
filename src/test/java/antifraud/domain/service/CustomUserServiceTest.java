@@ -96,8 +96,8 @@ class CustomUserServiceTest {
         then(encoder).should(times(1)).encode(stringCaptor.capture());
         verifyNoMoreInteractions(encoder);
 
-        String expectedArgumentPassword = stringCaptor.getValue();
-        assertEquals(expectedPassword, expectedArgumentPassword);
+        String actualArgumentPassword = stringCaptor.getValue();
+        assertEquals(expectedPassword, actualArgumentPassword);
     }
 
     @Test
