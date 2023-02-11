@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 
 @Slf4j
 @DataJpaTest
@@ -34,7 +33,8 @@ class CustomUserRepositoryTest {
 
     @BeforeEach
     void setup() {
-        this.customUser = CustomUserFactory.create("JohnDoe", "johndoe1", "secret");
+        this.customUser = CustomUserFactory
+                .create("JohnDoe", "johndoe1", "secret");
     }
 
     @Test
@@ -49,14 +49,15 @@ class CustomUserRepositoryTest {
 
     @Test
     void WhenUsernameDoesNotExistsThenReturnFalse() {
-        boolean result = customUserRepository.existsByUsername(any());
+        boolean result = customUserRepository.existsByUsername(customUser.getUsername());
 
         assertFalse(result);
     }
 
     @Test
     void WhenFindByNonExistentUsernameThenReturnEmpty() {
-        Optional<CustomUser> nonExistentUser = customUserRepository.findByUsernameIgnoreCase(any());
+        Optional<CustomUser> nonExistentUser = customUserRepository
+                .findByUsernameIgnoreCase(customUser.getUsername());
 
         assertThat(nonExistentUser).isEmpty();
     }
