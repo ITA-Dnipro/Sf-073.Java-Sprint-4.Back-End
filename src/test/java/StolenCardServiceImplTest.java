@@ -1,65 +1,85 @@
 import antifraud.domain.model.StolenCard;
+import antifraud.domain.service.impl.StolenCardServiceImpl;
+import antifraud.exceptions.CardNotFoundException;
 import antifraud.persistence.repository.StolenCardRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @Slf4j
+@ExtendWith(MockitoExtension.class)
 class StolenCardServiceImplTest {
-    private StolenCard stolenCard;
-    private StolenCardRepository stolenCardRepository;
 
+    @Mock
+    StolenCardRepository stolenCardRepository;
+    @InjectMocks
+    StolenCardServiceImpl stolenCardService;
+    private StolenCard stolenCard;
+    private StolenCard nonSavedStolenCard;
     @BeforeEach
     void setupService() {
         stolenCard = new StolenCard(1L, "4556958813071411");
-        stolenCardRepository = mock(StolenCardRepository.class);
+        nonSavedStolenCard = new StolenCard(1L, "4556958813071412");
     }
 
     @Test
     void canStoreStolenCard() {
         when(stolenCardRepository.save(stolenCard)).thenReturn(stolenCard);
 
-        StolenCard savedStolenCard = stolenCardRepository.save(stolenCard);
-        assertThat(savedStolenCard.getNumber()).isNotNull();
+        Optional<StolenCard> savedStolenCard = stolenCardService.storeStolenCardNumber(stolenCard);
 
+        assertNotNull(savedStolenCard);
     }
 
     @Test
     void canRemoveCardByNumber() {
-        Optional<StolenCard> stolenCardOptional = Optional.of(stolenCard);
+        when(stolenCardRepository.findByNumber(stolenCard.getNumber())).thenReturn(Optional.of(stolenCard));
+        //Optional<StolenCard> foundStolenCard = stolenCardRepository.findByNumber("4556958813071411");
+        doNothing().when(stolenCardRepository).deleteById(any());
 
-        when(stolenCardRepository.findByNumber(stolenCard.getNumber())).thenReturn(stolenCardOptional);
-        Optional<StolenCard> foundStolenCardOptional = stolenCardRepository.findByNumber(stolenCard.getNumber());
+        assertDoesNotThrow(()-> stolenCardService.removeCardNumber(stolenCard.getNumber()));
 
-        assertThat(foundStolenCardOptional).isNotEmpty();
     }
+
     @Test
-    void whenCardDoesntExistsOptionalIsEmpty() {
-        Optional<StolenCard> stolenCardOptional = Optional.of(stolenCard);
+    void whenCardDoesntExistsExceptionIsThrown() {
+        when(stolenCardRepository.findByNumber(any())).thenReturn(Optional.empty());
 
-        when(stolenCardRepository.findByNumber(stolenCard.getNumber())).thenReturn(stolenCardOptional);
-        Optional<StolenCard> foundStolenCardOptional = stolenCardRepository.findByNumber("4556958813071412");
-
-        assertThat(foundStolenCardOptional).isEmpty();
+        assertThrowsExactly(CardNotFoundException.class, () ->
+                stolenCardService.removeCardNumber(nonSavedStolenCard.getNumber()));
     }
+
+
     @Test
     void canShowAllCardNumbers() {
-        List<StolenCard> stolenCards = new ArrayList<>();
-        stolenCards.add(stolenCard);
+        List<StolenCard> stolenCards = List.of(stolenCard);
 
         when(stolenCardRepository.findAll()).thenReturn(stolenCards);
 
-        List<StolenCard> foundStolenCards = stolenCardRepository.findAll();
+        List<StolenCard> foundStolenCards = stolenCardService.showCardNumbers();
         log.info("list of stolen cards {}", foundStolenCards);
+
         assertThat(foundStolenCards).isNotEmpty();
     }
 
@@ -67,16 +87,17 @@ class StolenCardServiceImplTest {
     void existsByNumber() {
         when(stolenCardRepository.existsByNumber(stolenCard.getNumber())).thenReturn(true);
 
-        boolean actualValue = stolenCardRepository.existsByNumber("4556958813071411");
+        boolean actualValue = stolenCardService.existsByNumber(stolenCard.getNumber());
+
         assertTrue(actualValue);
     }
 
     @Test
     void whenCardDoesntExistsInDbShouldNotMatch() {
-        boolean expectedValue = true;
-        when(stolenCardRepository.existsByNumber(stolenCard.getNumber())).thenReturn(expectedValue);
+        when(stolenCardRepository.existsByNumber(nonSavedStolenCard.getNumber())).thenReturn(false);
 
-        boolean actualValue = stolenCardRepository.existsByNumber("4556958813071412");
-        assertThat(expectedValue).isNotEqualTo(actualValue);
+        boolean actualValue = stolenCardService.existsByNumber(nonSavedStolenCard.getNumber());
+
+        assertFalse(actualValue);
     }
 }
