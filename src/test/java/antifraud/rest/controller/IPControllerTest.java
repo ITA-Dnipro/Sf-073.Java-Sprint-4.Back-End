@@ -116,9 +116,9 @@ class IPControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = {"ADMINISTRATOR", "MERCHANT"})
+    @WithMockUser(roles = {"ADMINISTRATOR", "MERCHANT", "INTRUDER"})
     void WhenAccessWithIncorrectRoleThenReturnStatus403() throws Exception {
-        // accessing API with incorrect role
+        // accessing API with incorrect or non-existent role
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_CONTENT_INPUT))
