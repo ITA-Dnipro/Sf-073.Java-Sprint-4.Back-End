@@ -42,6 +42,7 @@ public class DelegatedSecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.POST, "/api/auth/user").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/list-access").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/auth/user/**").hasRole(UserRole.ADMINISTRATOR.name())
                         .requestMatchers(HttpMethod.GET, "/api/auth/list")
                         .hasAnyRole(UserRole.ADMINISTRATOR.name(), UserRole.SUPPORT.name())
