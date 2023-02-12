@@ -1,4 +1,4 @@
-package antifraud;
+package antifraud.persistence;
 
 import antifraud.domain.model.IP;
 import antifraud.domain.model.IPFactory;

@@ -1,4 +1,4 @@
-package antifraud;
+package antifraud.persistence;
 
 import antifraud.domain.model.RegularCard;
 import antifraud.domain.model.RegularCardFactory;

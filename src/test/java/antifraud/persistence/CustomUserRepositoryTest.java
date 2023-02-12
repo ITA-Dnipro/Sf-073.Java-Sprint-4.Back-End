@@ -1,4 +1,4 @@
-package antifraud;
+package antifraud.persistence;
 
 import antifraud.domain.model.CustomUser;
 import antifraud.domain.model.CustomUserFactory;

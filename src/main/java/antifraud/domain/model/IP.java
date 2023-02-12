@@ -18,8 +18,8 @@ import jakarta.persistence.Table;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @Builder(access = AccessLevel.PACKAGE)
 @Entity
 @Table(name = "ips", indexes = {

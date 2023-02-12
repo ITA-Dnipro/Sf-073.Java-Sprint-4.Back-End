@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface StolenCardRepository extends JpaRepository<StolenCard, Long> {
 
+
     boolean existsByNumber(String number);
 
     Optional<StolenCard> findByNumber(String cardNumber);
