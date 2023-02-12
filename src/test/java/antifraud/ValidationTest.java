@@ -1,23 +1,16 @@
+package antifraud;
+
 import antifraud.domain.model.enums.TransactionResult;
 import antifraud.domain.model.enums.WorldRegion;
 import antifraud.rest.dto.*;
-import antifraud.validation.AvailableRegion;
-import antifraud.validation.IpAddress;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.CreditCardNumber;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.format.annotation.DateTimeFormat;
-
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -36,7 +29,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong feedback")
-    public void testWrongFeedbackValidator() {
+    public void testWrongFeedbackValidatorShouldReturnFalse() {
         TransactionFeedbackDTO feedback = new TransactionFeedbackDTO(1L,
                 100L,
                 "",
@@ -51,7 +44,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong message")
-    public void testWrongFeedbackMessageValidator() {
+    public void testWrongFeedbackMessageValidatorShouldReturnTrue() {
         TransactionFeedbackDTO feedback = new TransactionFeedbackDTO(1L,
                 100L,
                 "",
@@ -67,7 +60,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator empty feedback")
-    public void testEmptyFeedbackValidator() {
+    public void testEmptyFeedbackValidatorShouldReturnFalse() {
         TransactionFeedbackDTO feedback = new TransactionFeedbackDTO(1L,
                 100L,
                 "",
@@ -82,7 +75,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator ALLOWED feedback")
-    public void testAllowedFeedbackValidator() {
+    public void testAllowedFeedbackValidatorShouldReturnTrue() {
         TransactionFeedbackDTO feedback = new TransactionFeedbackDTO(1L,
                 100L,
                 "",
@@ -97,7 +90,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong region")
-    public void testWrongRegionValidator() {
+    public void testWrongRegionValidatorShouldReturnFalse() {
         TransactionDTO transactionDTO = new TransactionDTO(100L,
                 "192.168.0.1",
                 "4000008449433403",
@@ -111,7 +104,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator empty region")
-    public void testEmptyRegionValidator() {
+    public void testEmptyRegionValidatorShouldReturnFalse() {
         TransactionDTO transactionDTO = new TransactionDTO(100L,
                 "192.168.0.1",
                 "4000008449433403",
@@ -125,7 +118,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong region message")
-    public void testWrongRegionMessageValidator() {
+    public void testWrongRegionMessageValidatorShouldReturnTrue() {
         TransactionDTO transactionDTO = new TransactionDTO(100L,
                 "192.168.0.1",
                 "4000008449433403",
@@ -140,7 +133,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator EAP region")
-    public void testCorrectRegionValidator() {
+    public void testCorrectRegionValidatorShouldReturnTrue() {
             TransactionDTO transactionDTO = new TransactionDTO(100L,
                 "192.168.0.1",
                 "4000008449433403",
@@ -154,7 +147,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong role")
-    public void testWrongRoleValidator() {
+    public void testWrongRoleValidatorShouldReturnFalse() {
         UserRoleDTO userRoleDTO = new UserRoleDTO("test",
                 "WWWW");
         Set<ConstraintViolation<UserRoleDTO>> violations = validator.validate(userRoleDTO);
@@ -163,7 +156,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator empty role")
-    public void testEmptyRoleValidator() {
+    public void testEmptyRoleValidatorShouldReturnFalse() {
         UserRoleDTO userRoleDTO = new UserRoleDTO("test",
                 "");
         Set<ConstraintViolation<UserRoleDTO>> violations = validator.validate(userRoleDTO);
@@ -172,7 +165,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong role message")
-    public void testWrongRoleMessageValidator() {
+    public void testWrongRoleMessageValidatorShouldReturnTrue() {
         UserRoleDTO userRoleDTO = new UserRoleDTO("test",
                 "WWW");
         Set<ConstraintViolation<UserRoleDTO>> violations = validator.validate(userRoleDTO);
@@ -182,7 +175,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator ADMINISTRATOR role")
-    public void testCorrectRoleValidator() {
+    public void testCorrectRoleValidatorShouldReturnTrue() {
         UserRoleDTO userRoleDTO = new UserRoleDTO("test",
                 "ADMINISTRATOR");
         Set<ConstraintViolation<UserRoleDTO>> violations = validator.validate(userRoleDTO);
@@ -191,7 +184,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong ip")
-    public void testWrongIPValidator() {
+    public void testWrongIPValidatorShouldReturnFalse() {
         IpDTO ipDTO = new IpDTO(0L,
                 "256.168.0.1");
         Set<ConstraintViolation<IpDTO>> violations = validator.validate(ipDTO);
@@ -200,7 +193,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator empty ip")
-    public void testEmptyIPValidator() {
+    public void testEmptyIPValidatorShouldReturnFalse() {
         UserRoleDTO userRoleDTO = new UserRoleDTO("test",
                 "");
         Set<ConstraintViolation<UserRoleDTO>> violations = validator.validate(userRoleDTO);
@@ -209,7 +202,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator wrong ip message")
-    public void testWrongIPMessageValidator() {
+    public void testWrongIPMessageValidatorShouldReturnTrue() {
         IpDTO ipDTO = new IpDTO(0L,
                 "192.168.333.1");
         Set<ConstraintViolation<IpDTO>> violations = validator.validate(ipDTO);
@@ -219,7 +212,7 @@ public class ValidationTest {
 
     @Test
     @DisplayName("Testing validator ip")
-    public void testCorrectIPValidator() {
+    public void testCorrectIPValidatorShouldReturnTrue() {
         IpDTO ipDTO = new IpDTO(0L,
                 "192.168.0.1");
         Set<ConstraintViolation<IpDTO>> violations = validator.validate(ipDTO);
