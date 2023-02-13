@@ -71,7 +71,7 @@ public class CustomUserServiceImpl implements CustomUserService {
     public CustomUser changeUserRole(CustomUser userWithRole) {
         CustomUser foundUser = foundByUsername(userWithRole.getUsername());
         roleCheckForCollision(userWithRole, foundUser);
-        if (UserRole.ADMINISTRATOR.equals(userWithRole.getRole())) {
+        if (UserRole.ADMINISTRATOR.equals(foundUser.getRole())) {
             throw new ExistingAdministratorException();
         }
         foundUser.setRole(userWithRole.getRole());
