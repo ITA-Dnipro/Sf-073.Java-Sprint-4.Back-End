@@ -62,7 +62,6 @@ public class UserController {
                 .build();
     }
 
-
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PutMapping("/role")
     UserDTO changeUserRole(@Valid @RequestBody UserRoleDTO userRoleDTO) {
