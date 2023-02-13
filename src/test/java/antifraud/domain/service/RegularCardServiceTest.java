@@ -32,6 +32,7 @@ class RegularCardServiceTest {
     @Test
     void whenRegularCardRepoIsEmptyThenFindByNumberShouldReturnNull() {
         RegularCard regularCard = regularCardServiceImpl.findByNumber("");
+
         assertThat(regularCard).isNull();
     }
 
@@ -73,8 +74,10 @@ class RegularCardServiceTest {
     @Test
     void whenSavingRegularCardThenReturnTheRegularCard() {
         RegularCard regularCard = RegularCardFactory.create(validCardNumber);
+
         given(regularCardRepository.save(regularCard)).willReturn(regularCard);
         RegularCard customRegularCard = regularCardServiceImpl.save(regularCard);
+
         assertEquals(regularCard, customRegularCard);
     }
 }

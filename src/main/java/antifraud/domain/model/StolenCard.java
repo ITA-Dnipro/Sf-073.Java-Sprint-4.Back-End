@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
 @Setter
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor//(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PACKAGE)
 @Entity
 @Table(name = "stolen_cards", indexes = {

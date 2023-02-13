@@ -9,6 +9,8 @@ import antifraud.exceptions.AccessViolationException;
 import antifraud.exceptions.AlreadyProvidedException;
 import antifraud.exceptions.ExistingAdministratorException;
 import antifraud.persistence.repository.CustomUserRepository;
+import antifraud.rest.dto.UserStatusDTO;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,8 +18,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -119,6 +121,18 @@ public class CustomUserServiceImpl implements CustomUserService {
     public String retrieveRealUsername(String username) {
         CustomUser foundUser = foundByUsername(username);
         return foundUser.getUsername();
+    }
+
+    @Override
+    public Map<String, String> login(String username) {
+        CustomUser foundUser = foundByUsername(username);
+        return Map.of("username",foundUser.getUsername(),"role",foundUser.getRole().toString());
+    }
+
+    @Override
+    public List<UserStatusDTO> getUsersPermissions() {
+        List<CustomUser> users = customUserRepository.findAll();
+        return users.stream().map(user ->new UserStatusDTO(user.getUsername(), user.getAccess())).toList();
     }
 
     @Override

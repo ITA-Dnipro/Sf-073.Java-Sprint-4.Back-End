@@ -131,9 +131,9 @@ class CardControllerTest {
         mockMvc.perform(get(api).with(SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect( jsonPath("$[0].number").value("374245455400126"))
+                .andExpect(jsonPath("$[0].number").value("374245455400126"))
                 .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect( jsonPath("$[1].number").value("378282246310005"))
+                .andExpect(jsonPath("$[1].number").value("378282246310005"))
                 .andExpect((jsonPath("$", hasSize(2))));
     }
 }

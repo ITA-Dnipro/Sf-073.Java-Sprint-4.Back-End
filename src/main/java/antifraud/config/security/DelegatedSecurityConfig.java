@@ -48,9 +48,13 @@ public class DelegatedSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/antifraud/transaction").hasRole(UserRole.MERCHANT.name())
                         .requestMatchers("/api/antifraud/**").hasRole(UserRole.SUPPORT.name())
                         .requestMatchers("/actuator/shutdown").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/list-access").permitAll()
                         .anyRequest().denyAll())
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http.cors();
         return http.build();
     }
 
