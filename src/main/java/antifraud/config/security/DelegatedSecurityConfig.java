@@ -36,6 +36,8 @@ public class DelegatedSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors()
+                .and()
                 .httpBasic(h -> h.authenticationEntryPoint(authEntryPoint))
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(h -> h.frameOptions().disable())
@@ -49,11 +51,9 @@ public class DelegatedSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/auth/**").hasRole(UserRole.ADMINISTRATOR.name())
                         .requestMatchers(HttpMethod.POST, "/api/antifraud/transaction").hasRole(UserRole.MERCHANT.name())
                         .requestMatchers("/api/antifraud/**").hasRole(UserRole.SUPPORT.name())
-                        .requestMatchers("/actuator/shutdown").permitAll()
-                        .anyRequest().denyAll())
+                        .requestMatchers("/actuator/shutdown").permitAll())
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.cors();
         return http.build();
     }
 
