@@ -134,6 +134,7 @@ public class CustomUserServiceImpl implements CustomUserService {
     public List<CustomUser> getUsersPermissions() {
         List<CustomUser> users = customUserRepository.findAll();
         return users.stream()
+                .filter(u -> !UserRole.ADMINISTRATOR.equals(u.getRole()))
                 .map(user -> CustomUserFactory
                         .createWithAccess(user.getUsername(), user.getAccess()))
                 .toList();

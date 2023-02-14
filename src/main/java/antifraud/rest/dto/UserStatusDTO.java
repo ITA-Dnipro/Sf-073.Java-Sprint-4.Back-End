@@ -6,13 +6,12 @@ import lombok.Builder;
 
 @Builder
 public record UserStatusDTO(String username,
-                            UserAccess status) {
+                            UserAccess access) {
 
-    public static UserStatusDTO fromModel(CustomUser userPermission) {
-
+    public static UserStatusDTO fromModel(CustomUser customUser) {
         return UserStatusDTO.builder()
-                .username(userPermission.getUsername())
-                .status(userPermission.getAccess())
+                .username(customUser.getUsername())
+                .access(customUser.getAccess())
                 .build();
     }
 }

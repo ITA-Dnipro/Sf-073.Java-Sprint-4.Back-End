@@ -79,7 +79,7 @@ public class UserController {
     @PostMapping("/login")
     Map<String, String> login(@RequestBody String username) {
 
-        return userService.login(username.replace("\"", ""));
+        return userService.login(username.replaceAll("\"", ""));
     }
 
     @PreAuthorize("hasRole('ADMINISTRATOR')")
