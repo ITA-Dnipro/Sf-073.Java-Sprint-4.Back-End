@@ -314,9 +314,9 @@ class CustomUserServiceTest {
         secondUser.setRole(UserRole.MERCHANT);
         user.setRole(UserRole.ADMINISTRATOR);
         given(customUserRepository.findByUsernameIgnoreCase(any()))
-                .willReturn(Optional.of(secondUser));
+                .willReturn(Optional.of(user));
 
-        Executable executable = () -> customUserService.changeUserRole(user);
+        Executable executable = () -> customUserService.changeUserRole(secondUser);
 
         assertThrows(ExistingAdministratorException.class, executable);
     }
