@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//@Configuration
+@Configuration
 @EnableConfigurationProperties(OpenApiProperty.class)
 public class OpenApiConfig {
     private static final String SCHEME_NAME = "basicAuth";
